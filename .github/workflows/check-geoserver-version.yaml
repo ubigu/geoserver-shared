@@ -35,7 +35,7 @@ jobs:
            echo "UPDATE_VERSION=true" >> "$GITHUB_OUTPUT"
            echo "GEOSERVER_VERSION=${{ env.GEOSERVER_VERSION }}" >> "$GITHUB_OUTPUT"
           fi
-  update-geotools-version:
+  update-geoserver-version:
     if: needs.check-geoserver-version.outputs.execute-update == 'true'
     needs: check-geoserver-version
     runs-on: ubuntu-latest
@@ -89,5 +89,5 @@ jobs:
           push: true
           build-args:
             GEOSERVER_VERSION=${{ env.GEOSERVER_VERSION }}
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: ${{ env.GEOSERVER_VERSION }}-ubigu1
           labels: ${{ steps.meta.outputs.labels }}
