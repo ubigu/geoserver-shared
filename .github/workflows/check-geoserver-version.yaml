@@ -28,7 +28,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          if gh api /repos/${{github.repository}}/tags --jq '.[].name' |grep -q -- '${{env.GEOSERVER_VERSION}}-ubigu1'; then
+          if gh api /repos/${{github.repository}}/tags --jq '.[].name' |grep -q -- '${{ env.RELEASE_TAG }}'; then
            echo "Geotools version ${{env.GEOSERVER_VERSION}} was found from project tags. Doing nothing."
           else
            echo "Triggering geotools build action: ${{env.GEOSERVER_VERSION}}";
@@ -46,6 +46,7 @@ jobs:
       id-token: write
     env:
       GEOSERVER_VERSION: ${{ needs.check-geoserver-version.outputs.geoserver-version }}
+      RELEASE_TAG: ${{ needs.check-geoserver-version.outputs.geoserver-version }}-ubigu1
     steps:
 
       - name: "Pull repo"
@@ -65,7 +66,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           title: "Update geoserver version to ${{ env.GEOSERVER_VERSION }}"
-          tag: ${{ env.GEOSERVER_VERSION }}-ubigu1
+          tag: ${{ env.RELEASE_TAG }}
 
       - name: 'Login to GitHub Container Registry'
         uses: docker/login-action@v3
@@ -79,6 +80,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ghcr.io/${{ github.repository }}
+          tags: ${{ env.RELEASE_TAG }}
 
       - name: Build and push Docker image
         id: push
@@ -89,5 +91,5 @@ jobs:
           push: true
           build-args:
             GEOSERVER_VERSION=${{ env.GEOSERVER_VERSION }}
-          tags: ${{ env.GEOSERVER_VERSION }}-ubigu1
+          tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
